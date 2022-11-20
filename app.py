@@ -33,11 +33,10 @@ if image_file:
                              aspect_ratio=aspect_ratio)
 
     # Manipulate cropped image at will
-    st.write("Preview")
-    _ = cropped_img.thumbnail((150, 150))
-    st.image(cropped_img)
+    # st.write("Preview")
+    # _ = cropped_img.thumbnail((150, 150))
     miletry = 1
-    size = (750, 750)
+    size = (1200, 1200)
     if miletry == 1:
         img = Image.open("frame.png")
         img2 = Image.open("frameblack.png")
