@@ -9,15 +9,34 @@ from bokeh.models import CustomJS
 from streamlit_bokeh_events import streamlit_bokeh_events
 from io import StringIO
 from PIL import Image
-st.set_page_config(
-    page_title="Qwiklabs Progress Generator",
-    page_icon="🤖",
-    layout="centered",
-    initial_sidebar_state="expanded"
-)
+from streamlit_cropper import st_cropper
+st.set_option('deprecation.showfileUploaderEncoding', False)
+
+# Upload an image and set some options for demo purposes
+st.header("Cropper Demo")
 image_file = st.file_uploader("Upload Image", type=['jpg', 'png', 'jpeg'])
-miletry = 1
-if image_file is not None:
+realtime_update = st.sidebar.checkbox(label="Update in Real Time", value=True)
+box_color = st.sidebar.color_picker(label="Box Color", value='#0000FF')
+aspect_choice = st.sidebar.radio(label="Aspect Ratio", options=[
+                                 "1:1", "16:9", "4:3", "2:3", "Free"])
+aspect_dict = {
+    "1:1": (1, 1)
+}
+aspect_ratio = aspect_dict[aspect_choice]
+
+if image_file:
+    img = Image.open(image_file)
+    if not realtime_update:
+        st.write("Double click to save crop")
+    # Get a cropped image from the frontend
+    cropped_img = st_cropper(img, realtime_update=realtime_update, box_color=box_color,
+                             aspect_ratio=aspect_ratio)
+
+    # Manipulate cropped image at will
+    st.write("Preview")
+    _ = cropped_img.thumbnail((150, 150))
+    st.image(cropped_img)
+    miletry = 1
     size = (750, 750)
     if miletry == 1:
         img = Image.open("frame.png")
@@ -32,13 +51,13 @@ if image_file is not None:
         img = Image.open("nomile.png").convert("RGB")
     img = img.resize(size, Image.ANTIALIAS)
     img2 = img2.resize(size, Image.ANTIALIAS)
-    card = Image.open(image_file)
+    # card = Image.open(image_file)
 
-    card = card.resize(size, Image.ANTIALIAS)
+    card = cropped_img.resize(size, Image.ANTIALIAS)
 
-    card2 = Image.open(image_file)
+    # card2 = Image.open(image_file)
 
-    card2 = card2.resize(size, Image.ANTIALIAS)
+    card2 = cropped_img.resize(size, Image.ANTIALIAS)
 
     card.paste(img, (0, 0), img)
 
