@@ -10,10 +10,13 @@ template_path = "template_social.png"
 
 def get_font(size):
     try:
-        return ImageFont.truetype("Agrandir-Wide-Bold.ttf", size)
-    except:
-        # fallback to Arial Bold in case font not found
-        return ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Bold.ttf", size)
+        # Use font from the repository
+        return ImageFont.truetype("assets/fonts/Agrandir-Wide-Bold.ttf", size)
+    except Exception as e:
+        st.error(f"Error loading font: {e}")
+        # Fallback to a default font if the custom one is not found
+        return ImageFont.load_default()
+
 
 if logo_file and community_name:
     template = Image.open(template_path).convert("RGBA")
