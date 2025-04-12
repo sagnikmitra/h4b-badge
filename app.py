@@ -1,81 +1,58 @@
-from openpyxl import load_workbook
-import openpyxl as pxl
+from PIL import Image, ImageDraw, ImageFont
 import streamlit as st
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from bokeh.models.widgets import Button
-from bokeh.models import CustomJS
-from streamlit_bokeh_events import streamlit_bokeh_events
-from io import StringIO
-from PIL import Image
-from streamlit_cropper import st_cropper
-st.set_option('deprecation.showfileUploaderEncoding', False)
 
-# Upload an image and set some options for demo purposes
-st.header("Cropper Demo")
-image_file = st.file_uploader("Upload Image", type=['jpg', 'png', 'jpeg'])
-realtime_update = st.sidebar.checkbox(label="Update in Real Time", value=True)
-box_color = st.sidebar.color_picker(label="Box Color", value='#0000FF')
-aspect_choice = st.sidebar.radio(label="Aspect Ratio", options=[
-                                 "1:1", "16:9", "4:3", "2:3", "Free"])
-aspect_dict = {
-    "1:1": (1, 1)
-}
-aspect_ratio = aspect_dict[aspect_choice]
+# Upload UI
+st.title("Community Poster Generator")
+logo_file = st.file_uploader("Upload Community Logo", type=["png", "jpg", "jpeg"])
+community_name = st.text_input("Enter Community Name")
 
-if image_file:
-    img = Image.open(image_file)
-    if not realtime_update:
-        st.write("Double click to save crop")
-    # Get a cropped image from the frontend
-    cropped_img = st_cropper(img, realtime_update=realtime_update, box_color=box_color,
-                             aspect_ratio=aspect_ratio)
+template_path = "template_social.png"
 
-    # Manipulate cropped image at will
-    # st.write("Preview")
-    # _ = cropped_img.thumbnail((150, 150))
-    miletry = 1
-    size = (1200, 1200)
-    if miletry == 1:
-        img = Image.open("frame.png")
-        img2 = Image.open("frameblack.png")
-    elif miletry == 2:
-        img = Image.open("second.png").convert("RGB")
-    elif miletry == 3:
-        img = Image.open("third.png").convert("RGB")
-    elif miletry == 4:
-        img = Image.open("ultimate.png").convert("RGB")
-    elif miletry == 0:
-        img = Image.open("nomile.png").convert("RGB")
-    img = img.resize(size, Image.ANTIALIAS)
-    img2 = img2.resize(size, Image.ANTIALIAS)
-    # card = Image.open(image_file)
+def get_font(size):
+    try:
+        return ImageFont.truetype("Agrandir-Wide-Bold.ttf", size)
+    except:
+        # fallback to Arial Bold in case font not found
+        return ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Bold.ttf", size)
 
-    card = cropped_img.resize(size, Image.ANTIALIAS)
+if logo_file and community_name:
+    template = Image.open(template_path).convert("RGBA")
+    logo = Image.open(logo_file).convert("RGBA")
 
-    # card2 = Image.open(image_file)
+    # Resize logo to height = 352px
+    target_height = 800
+    aspect_ratio = logo.width / logo.height
+    new_logo = logo.resize((int(target_height * aspect_ratio), target_height), Image.LANCZOS)
 
-    card2 = cropped_img.resize(size, Image.ANTIALIAS)
+    # Paste logo at exact position
+    logo_x = (template.width - new_logo.width) // 2
+    logo_y = 970
 
-    card.paste(img, (0, 0), img)
+ # Draw stroke border
+    draw = ImageDraw.Draw(template)
+    border_thickness = 10
+    border_color = "#ffbb00"
+    border_box = [
+        logo_x - border_thickness,
+        logo_y - border_thickness,
+        logo_x + new_logo.width + border_thickness,
+        logo_y + new_logo.height + border_thickness
+    ]
+    draw.rectangle(border_box, outline=border_color, width=border_thickness)
 
-    card2.paste(img2, (0, 0), img2)
-    card.save("frame_white.jpg", format="png")
+    template.paste(new_logo, (logo_x, logo_y), new_logo)
 
-    card2.save("frame_black.jpg", format="png")
-    st.image(card)
-    st.image(card2)
-miletry = 0
-# st.video('https://www.youtube.com/watch?v=Lf_tQWluHWA&t=10s')
+    # Add community name
+    draw = ImageDraw.Draw(template)
+    font = get_font(120)
+    bbox = draw.textbbox((0, 0), community_name, font=font)
+    text_width = bbox[2] - bbox[0]
+    text_x = (template.width - text_width) // 2
+    text_y = logo_y + new_logo.height + 70
+    draw.text((text_x, text_y), community_name, font=font, fill="#FFC700")
 
-# import gspread
-# from oauth2client.service_account import ServiceAccountCredentials
-
-# scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-# credentials = ServiceAccountCredentials.from_json_keyfile_name('covidoff-ecef33b9fe0b.json', scope)
-
-# gc = gspread.authorize(credentials)
-# df = gc.open('covidoff-test-r').sheet1
-
-# st.write(df.get_all_records())
+    # Show and download
+    st.image(template, caption="Final Poster", use_column_width=True)
+    template.save("final_poster.png")
+    with open("final_poster.png", "rb") as f:
+        st.download_button("Download Poster", f, file_name="poster.png")
