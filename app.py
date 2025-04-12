@@ -55,7 +55,7 @@ if logo_file and community_name:
     draw.text((text_x, text_y), community_name, font=font, fill="#FFC700")
 
     # Show and download
-    st.image(template, caption="Final Poster", use_column_width=True)
+    st.image(template, caption="Final Poster", use_container_width=True)
     template.save("final_poster.png")
     with open("final_poster.png", "rb") as f:
         st.download_button("Download Poster", f, file_name="poster.png")
