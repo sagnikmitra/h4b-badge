@@ -11,7 +11,7 @@ template_path = "template_social.png"
 def get_font(size):
     try:
         # Use font from the repository
-        return ImageFont.truetype("assets/fonts/Agrandir-Wide-Bold.ttf", size)
+        return ImageFont.truetype("agrandir-wide-bold.ttf", size)
     except Exception as e:
         st.error(f"Error loading font: {e}")
         # Fallback to a default font if the custom one is not found
